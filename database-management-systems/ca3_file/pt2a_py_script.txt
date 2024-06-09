@@ -1,0 +1,321 @@
+#for generating script for part2a
+#use on new schema created for part2a
+
+
+import mysql.connector
+import pandas as pd
+from csv import reader
+import csv 
+from datetime import datetime
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  password="bqYGm?j!Az!kWsD?x98",
+  database="ca3_pt2a_schema_test",
+  auth_plugin='mysql_native_password'
+  
+)
+
+### read and add residences to residence table
+file = "OnePassTesters.csv"
+df2 = pd.read_csv(file)
+
+res_uni = pd.unique(df2['Residence Type'])
+
+for resi2 in res_uni:
+  mycursor = mydb.cursor()
+  valuni = resi2
+  mycursor.execute("INSERT INTO residence (RES_TYPE) VALUES ('{}')".format(valuni))
+
+mydb.commit()
+
+#read and add gov_sectors to gov_sector table
+file2 = "AgentCompany.csv"
+df3 = pd.read_csv(file2)
+
+gov_list = pd.unique(df3['Gov Agent'])
+
+for gov_val in gov_list:
+  mycursor = mydb.cursor()
+  gov_values = gov_val
+  mycursor.execute("INSERT INTO gov_sector (GOV_NAME) VALUES ('{}')".format(gov_values))
+
+mydb.commit()
+
+### read and add priv_sectors to priv_sector table
+
+col_list = ['Private Company']
+df4 = pd.read_csv('AgentCompany.csv', usecols=col_list)
+df4 = df4.dropna(how='any')
+
+priv_list = pd.unique(df4['Private Company'])
+
+for priv_val in priv_list:
+  mycursor = mydb.cursor()
+  priv_values = priv_val
+  mycursor.execute("INSERT INTO priv_sector (PRIV_NAME) VALUES ('{}')".format(priv_values))
+
+mydb.commit()
+
+#use dict to match values in Residence Type for every user - to insert as FK in SQL
+#select res_id's PK(it's AI)
+residence_ids= {}
+for resi2 in res_uni:
+    mycursor = mydb.cursor()
+    sql = "SELECT RES_ID FROM RESIDENCE WHERE RES_TYPE='{0}'".format(resi2)
+    mycursor.execute(sql)
+    myresult = mycursor.fetchall() #myresult is a list of tuple
+    residence_id = myresult[0][0]
+    residence_ids[resi2] = residence_id #store resident id in a dict, key is resident_type, value is id
+
+mycursor = mydb.cursor()
+
+##### pair up the users with their respective res_id
+user_table_values = [] #list to hold user values
+with open('OnePassTesters.csv', 'r') as read_obj:
+  csv_reader = reader(read_obj)
+
+  next(read_obj)
+
+  for line in csv_reader:
+    user_row = line[0], line[5], line[1], line[2], line[3]
+
+    L1 = list(user_row)
+
+    user_residence_row = line[4]
+
+    if user_residence_row == 'Citizen':
+      L1.append(residence_ids['Citizen'])
+    if user_residence_row == 'PR':
+      L1.append(residence_ids['PR'])
+    if user_residence_row == 'Pass':
+      L1.append(residence_ids['Pass'])
+
+    user_table_values.append(L1)
+
+#insert values into user table with user_table_values
+mycursor = mydb.cursor()
+for value in user_table_values:
+    sql = "INSERT INTO USER(LOGIN, PASSWORDHASHED, NAME, EMAIL, MOBILE, RES_ID) VALUES (%s, %s, %s, %s, %s, %s);"
+    val = value
+    mycursor.execute(sql, val)
+
+mydb.commit()
+
+#####for register_gov table
+#use dict to match values in Gov_sector for every user - to insert as FK in SQL
+#select gov_ID's PK(it's AI)
+gov_sector_ids= {}
+for gov_val in gov_list:
+    mycursor = mydb.cursor()
+    sql = "SELECT GOV_ID FROM GOV_SECTOR WHERE GOV_NAME='{0}'".format(gov_val)
+    mycursor.execute(sql)
+    myresult = mycursor.fetchall() #myresult is a list of tuple
+    gov_sector_id = myresult[0][0]
+    gov_sector_ids[gov_val] = gov_sector_id #store gov_sector_id in a dict, key is gov_sector_name, value is id
+
+mycursor = mydb.cursor()
+
+print()
+
+### lists to hold gov_agents values
+reg_CPF_list = []
+reg_CPF_login = []
+reg_CPF_true = []
+
+reg_HDB_list = []
+reg_HDB_login = []
+reg_HDB_true = []
+
+reg_TP_list = []
+reg_TP_login = []
+reg_TP_true = []
+
+with open("OnePassTesters.csv", "r") as csv_gov_reg:
+  csvreader = reader(csv_gov_reg)
+
+  next(csvreader)
+
+  for reg_line in csvreader:
+    register_row_CPF = reg_line[6]
+    register_login = reg_line[0]
+
+    if register_row_CPF == 'TRUE':
+      reg_CPF_true = (register_login, gov_sector_ids['CPF'])
+      reg_CPF_list.append(reg_CPF_true)
+
+with open("OnePassTesters.csv", "r") as csv_gov_reg2:
+  csvreader2 = reader(csv_gov_reg2)
+
+  next(csvreader2)
+
+  for reg_line2 in csvreader2:
+    register_row_HDB = reg_line2[7]
+    register_login = reg_line2[0]
+
+    if register_row_HDB == 'TRUE':
+      reg_HDB_true = (register_login, gov_sector_ids['HDB'])
+      reg_HDB_list.append(reg_HDB_true)
+
+with open("OnePassTesters.csv", "r") as csv_gov_reg3:
+  csvreader3 = reader(csv_gov_reg3)
+
+  next(csvreader3)
+
+  for reg_line_3 in csvreader3:
+    register_row_TP = reg_line_3[8]
+    register_login = reg_line_3[0]
+
+    if register_row_TP == 'TRUE':
+      reg_TP_true = (register_login, gov_sector_ids['TP'])
+      reg_TP_list.append(reg_TP_true)
+
+reg_all_list = reg_CPF_list + reg_HDB_list + reg_TP_list
+
+########################## UNCOMMENT WHEN DONE #########################
+
+### add values to register_gov from reg_all_list
+mycursor = mydb.cursor()
+for reg_value in reg_all_list:
+    sql = "INSERT INTO REGISTER_GOV (LOGIN, GOV_ID) VALUES (%s, %s);"
+    val = reg_value
+    mycursor.execute(sql, val)
+    mydb.commit()
+
+###dict for private_companies
+priv_ids = {}
+for priv_val in priv_list:
+  mycursor = mydb.cursor()
+  sql = "SELECT PRIV_ID FROM PRIV_SECTOR WHERE PRIV_NAME = '{0}'".format(priv_val)
+  mycursor.execute(sql)
+  myresult = mycursor.fetchall()
+  priv_id = myresult[0][0]
+  priv_ids[priv_val] = priv_id #store priv_id in a dict - key is priv_name, value is priv_id
+
+
+#lists to hold priv_sector values
+reg_DBS_list = []
+reg_DBS_login = []
+reg_DBS_true = []
+
+reg_FairPrice_list = []
+reg_FairPrice_login = []
+reg_FairPrice_true = []
+
+with open("OnePassTesters.csv", "r") as csv_priv_reg:
+  csvreader4 = reader(csv_priv_reg)
+
+  next(csvreader4)
+
+  for reg_line4 in csvreader4:
+    register_row_DBS = reg_line4[9]
+    register_login = reg_line4[0]
+
+    if register_row_DBS == 'TRUE':
+      reg_DBS_true = (register_login, priv_ids['DBS'])
+      reg_DBS_list.append(reg_DBS_true)
+
+with open("OnePassTesters.csv", "r") as csv_priv_reg2:
+  csvreader5 = reader(csv_priv_reg2)
+
+  next(csvreader5)
+
+  for reg_line5 in csvreader5:
+    register_row_FairPrice = reg_line5[10]
+    register_login = reg_line5[0]
+
+    if register_row_FairPrice == 'TRUE':
+      reg_FairPrice_true = (register_login, priv_ids['FairPrice'])
+      reg_FairPrice_list.append(reg_FairPrice_true)
+
+reg_all_priv_list = reg_DBS_list + reg_FairPrice_list
+
+### add values to register_priv using reg_all_priv_list
+mycursor = mydb.cursor()
+for reg_values in reg_all_priv_list:
+    sql = "INSERT INTO REGISTER_PRIV (LOGIN, PRIV_ID) VALUES (%s, %s);"
+    val = reg_values
+    mycursor.execute(sql, val)
+    mydb.commit()
+
+usage_gov_CPF = []
+usage_gov_HDB = []
+usage_gov_TP =[]
+usage_gov_list = []
+
+import datetime
+
+with open("Usage.csv", "r") as read_csv_gov:
+    csvreader_2 = reader(read_csv_gov)
+
+    next(csvreader_2)
+
+    for row in csvreader_2:
+
+      login_usage_gov = row[0]
+      entity = row[1]
+      date_row = row[2]
+      
+      if entity == 'CPF':
+        date_row_obj_CPF = datetime.datetime.strptime(date_row, '%d/%m/%y %H:%M')
+        date_row_str_CPF = datetime.datetime.strftime(date_row_obj_CPF,'%Y-%m-%d %H:%M:%S')
+        usage_gov_CPF = (login_usage_gov, gov_sector_ids['CPF'], date_row_str_CPF)
+        usage_gov_list.append(usage_gov_CPF)
+
+      if entity == 'HDB':
+        date_row_obj_HDB = datetime.datetime.strptime(date_row, '%d/%m/%y %H:%M')
+        date_row_str_HDB = datetime.datetime.strftime(date_row_obj_HDB,'%Y-%m-%d %H:%M:%S')
+        usage_gov_HDB = (login_usage_gov, gov_sector_ids['HDB'], date_row_str_HDB)
+        usage_gov_list.append(usage_gov_HDB)
+
+      if entity == 'TP':
+        date_row_obj_TP = datetime.datetime.strptime(date_row, '%d/%m/%y %H:%M')
+        date_row_str_TP = datetime.datetime.strftime(date_row_obj_TP,'%Y-%m-%d %H:%M:%S')
+        usage_gov_TP = (login_usage_gov, gov_sector_ids['TP'], date_row_str_TP)
+        usage_gov_list.append(usage_gov_TP)
+
+
+mycursor = mydb.cursor()
+
+for usage_gov_values in usage_gov_list:
+  sql = "INSERT INTO GOV_USAGE (LOGIN, GOV_ID, DATE_TIME) VALUES (%s, %s, %s);"
+  values = usage_gov_values
+  mycursor.execute(sql, values)
+  mydb.commit()
+
+
+usage_priv_list = []
+usage_priv_DBS = []
+usage_priv_FairPrice = []
+
+with open("Usage.csv", "r") as read_csv_priv:
+    csvreader_3 = reader(read_csv_priv)
+
+    next(csvreader_3)
+
+    for row in csvreader_3:
+
+      login_usage_priv = row[0]
+      entity = row[1]
+      date_row = row[2]
+
+      if entity == 'DBS':
+        date_row_obj_DBS = datetime.datetime.strptime(date_row, '%d/%m/%y %H:%M')
+        date_row_str_DBS = datetime.datetime.strftime(date_row_obj_DBS,'%Y-%m-%d %H:%M:%S')
+        usage_priv_DBS = (login_usage_priv, priv_ids['DBS'], date_row_str_DBS)
+        usage_priv_list.append(usage_priv_DBS)
+
+      if entity == 'FairPrice':
+        date_row_obj_FairPrice = datetime.datetime.strptime(date_row, '%d/%m/%y %H:%M')
+        date_row_str_FairPrice = datetime.datetime.strftime(date_row_obj_FairPrice,'%Y-%m-%d %H:%M:%S')
+        usage_priv_FairPrice = (login_usage_priv, priv_ids['FairPrice'], date_row_str_FairPrice)
+        usage_priv_list.append(usage_priv_FairPrice)
+
+mycursor = mydb.cursor()
+
+for usage_priv_values in usage_priv_list:
+  sql = "INSERT INTO PRIV_USAGE (LOGIN, PRIV_ID, DATE_TIME) VALUES (%s, %s, %s);"
+  values2 = usage_priv_values
+  mycursor.execute(sql, values2)
+  mydb.commit()

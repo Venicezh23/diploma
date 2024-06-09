@@ -1,0 +1,82 @@
+#for pt2b report
+#database must be the same as the database in pt2a
+
+import mysql.connector
+from mysql.connector import cursor
+import pandas as pd
+from csv import reader
+import csv 
+from datetime import datetime
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  password="bqYGm?j!Az!kWsD?x98",
+  database="ca3_pt2a_schema_test",
+  auth_plugin='mysql_native_password'
+  
+)
+
+### read and add residences to residence table
+file = "OnePassTesters.csv"
+df2 = pd.read_csv(file)
+
+res_uni = pd.unique(df2['Residence Type'])
+
+for resi2 in res_uni:
+  mycursor = mydb.cursor()
+  valuni = resi2
+  mycursor.execute("INSERT INTO residence (RES_TYPE) VALUES ('{}')".format(valuni))
+
+mydb.commit()
+
+#use dict to match values in Residence Type for every user - to insert as FK in SQL
+#select res_id's PK(it's AI)
+residence_ids= {}
+for resi2 in res_uni:
+    mycursor = mydb.cursor()
+    sql = "SELECT RES_ID FROM RESIDENCE WHERE RES_TYPE='{0}'".format(resi2)
+    mycursor.execute(sql)
+    myresult = mycursor.fetchall() #myresult is a list of tuple
+    residence_id = myresult[0][0]
+    residence_ids[resi2] = residence_id #store resident id in a dict, key is resident_type, value is id
+
+mycursor = mydb.cursor()
+
+for key in residence_ids:
+    print(key)
+    res_val = residence_ids[key]
+    mycursor_res = mydb.cursor()
+    sql_res = "SELECT LOGIN FROM USER WHERE RES_ID = '{0}'".format(res_val)
+    mycursor_res.execute(sql_res)
+    res_user = mycursor_res.fetchall()
+
+    print('Total users: ', len(res_user), '\n')
+
+###retrieve total users for a certain month
+
+print('Monthly usage for government agencies:')
+print(f"{'Month':<10}{'Total users':^10}")
+
+for x in range(1, 13):
+    mycursor_month = mydb.cursor()
+    month_val = x
+    sql_month = "SELECT MONTH(DATE_TIME) FROM GOV_USAGE WHERE MONTH(DATE_TIME) = '{0}'".format(month_val)
+    mycursor_month.execute(sql_month)
+    month_sum = mycursor_month.fetchall()
+    #print('Month ', x, '->', len(month_sum))
+
+    print(f"{x :<10}{len(month_sum):^10}")
+
+print('\nMonthly usage for private agencies: ')
+print(f"{'Month':<10}{'Total users':^10}")
+
+for x in range(1, 13):
+    mycursor_month_priv = mydb.cursor()
+    month_val = x
+    sql_month_priv = "SELECT MONTH(DATE_TIME) FROM PRIV_USAGE WHERE MONTH(DATE_TIME) = '{0}'".format(month_val)
+    mycursor_month_priv.execute(sql_month_priv)
+    month_sum = mycursor_month_priv.fetchall()
+    #print('Month ', x, '->', len(month_sum))
+
+    print(f"{x :<10}{len(month_sum):^10}")

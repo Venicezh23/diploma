@@ -1,0 +1,108 @@
+#for generating report part2a
+#database must match the schema name created for part2a
+#is run separately in another py file 
+
+import mysql.connector
+from mysql.connector import cursor
+import pandas as pd
+from csv import reader
+import csv 
+from datetime import datetime
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  password="bqYGm?j!Az!kWsD?x98",
+  database="ca3_pt2a_schema_test",
+  auth_plugin='mysql_native_password'
+  
+)
+
+### read and add gov_sectors 
+file2 = "AgentCompany.csv"
+df3 = pd.read_csv(file2)
+
+gov_list = pd.unique(df3['Gov Agent'])
+
+for gov_val in gov_list:
+  mycursor = mydb.cursor()
+  gov_values = gov_val
+  mycursor.execute("INSERT INTO gov_sector (GOV_NAME) VALUES ('{}')".format(gov_values))
+
+mydb.commit()
+
+gov_sector_ids= {}
+for gov_val in gov_list:
+    mycursor = mydb.cursor()
+    sql = "SELECT GOV_ID FROM GOV_SECTOR WHERE GOV_NAME='{0}'".format(gov_val)
+    mycursor.execute(sql)
+    myresult = mycursor.fetchall() #myresult is a list of tuple
+    gov_sector_id = myresult[0][0]
+    gov_sector_ids[gov_val] = gov_sector_id #store gov_sector_id in a dict, key is gov_sector_name, value is id
+
+mycursor = mydb.cursor()
+
+### read and add priv_sectors to priv_sector table
+col_list = ['Private Company']
+df4 = pd.read_csv('AgentCompany.csv', usecols=col_list)
+df4 = df4.dropna(how='any')
+
+priv_list = pd.unique(df4['Private Company'])
+
+for priv_val in priv_list:
+  #print(priv_val)
+  mycursor = mydb.cursor()
+  priv_values = priv_val
+  mycursor.execute("INSERT INTO priv_sector (PRIV_NAME) VALUES ('{}')".format(priv_values))
+
+mydb.commit()
+
+print()
+
+###dict for private_companies
+priv_ids = {}
+for priv_val in priv_list:
+  mycursor = mydb.cursor()
+  sql = "SELECT PRIV_ID FROM PRIV_SECTOR WHERE PRIV_NAME = '{0}'".format(priv_val)
+  mycursor.execute(sql)
+  myresult = mycursor.fetchall()
+  priv_id = myresult[0][0]
+  priv_ids[priv_val] = priv_id #store priv_id in a dict - key is priv_name, value is priv_id
+
+###print out usage report
+for key in gov_sector_ids:
+    print('<', key, '>')
+    value = gov_sector_ids[key]
+    mycursor = mydb.cursor()
+    sql = "SELECT LOGIN FROM GOV_USAGE WHERE GOV_ID = '{0}'".format(value)
+    mycursor.execute(sql)
+    login_result = mycursor.fetchall()
+
+    mycursor2 = mydb.cursor()
+    sql2 = "SELECT DISTINCT LOGIN FROM GOV_USAGE WHERE GOV_ID = '{0}'".format(value)
+    mycursor2.execute(sql2)
+    log_uni = mycursor2.fetchall()
+
+    print('Total logins: ', len(login_result))
+    print('Unique users: ', len(log_uni))
+
+    print()
+
+
+for key in priv_ids:
+    print('<', key, '>')
+    value_priv = priv_ids[key]
+    mycursor_priv = mydb.cursor()
+    sql_priv = "SELECT LOGIN FROM PRIV_USAGE WHERE PRIV_ID = '{0}'".format(value_priv)
+    mycursor_priv.execute(sql_priv)
+    login_priv = mycursor.fetchall()
+
+    mycursor_priv2 = mydb.cursor()
+    sql_priv2 = "SELECT DISTINCT LOGIN FROM PRIV_USAGE WHERE PRIV_ID = '{0}'".format(value_priv)
+    mycursor_priv2.execute(sql_priv2)
+    log_uni2 = mycursor_priv2.fetchall()
+
+    print('Total login: ', len(login_priv))
+    print('Unique users: ', len(log_uni2))
+
+    print()
