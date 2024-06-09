@@ -1,0 +1,61 @@
+package DigitalSolutionsManagement;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.security.SecureRandom;
+
+public class DigitalSolutionsCategory extends DigitalSolutionsManagement {
+    
+    public String solutionCategory; //holds type of solution - e.g.online collab
+    
+    //ArrayList of DigitalSolution
+    //store each DigitalSolution object input by user
+    public ArrayList<DigitalSolution> digitalSolutionStorage; 
+    
+    public DigitalSolutionsCategory(String solutionCategory, ArrayList<DigitalSolution> digitalSolutionStorage){
+        this.solutionCategory = solutionCategory;
+        this.digitalSolutionStorage = digitalSolutionStorage;
+        
+        
+    }
+    
+    //if success - true (done)
+    //if full - false (done?)
+    //if duplicate object - false
+    public boolean addDigitalSolution(DigitalSolution digitalSolution){
+        try {
+            digitalSolutionStorage.add(digitalSolution);
+            System.out.printf("%s%s%n", digitalSolution.Name, " is added.");
+            return true;
+        } catch (Exception e) {
+            System.out.printf("%n%s%s%n", digitalSolution, " could not be added.");
+            return false;
+        }
+    }
+    
+    
+    public void removeDigitalObject(String digitalSolutionRemove){
+        try {
+            DigitalSolution digitalSolution = getDigitalSolution(digitalSolutionRemove);
+            digitalSolutionStorage.remove(digitalSolution);
+            System.out.println("Removed: " + digitalSolutionRemove);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Could not remove: " + digitalSolutionRemove);
+        }
+    }
+    
+    //try to use try and catch?
+    public DigitalSolution getDigitalSolution(String digitalSolutionName){
+        for(int i = 0; i < digitalSolutionStorage.size(); i++){
+            if(digitalSolutionStorage.get(i).Name.equals(digitalSolutionName)){
+                return digitalSolutionStorage.get(i);
+            }  
+        }
+        return null;
+    }
+    
+    
+    
+}
+}

@@ -1,0 +1,258 @@
+package DigitalSolutionsManagement;
+
+import java.io.*;
+import java.util.*;
+
+import java.util.ArrayList;
+
+public class DigitalSolutionsManagement {
+
+    static ArrayList<DigitalSolutionsCategory> solutionCategorys = new ArrayList<DigitalSolutionsCategory>();
+    
+    public static void main(String[] args) {
+        
+        ArrayList<DigitalSolution> onlineCollab = new ArrayList<DigitalSolution>(5);
+        ArrayList<DigitalSolution> virtualMeetings = new ArrayList<DigitalSolution>(5);
+        ArrayList<DigitalSolution> eSign = new ArrayList<DigitalSolution>(5);
+        ArrayList<DigitalSolution> others = new ArrayList<DigitalSolution>(5);
+        ArrayList<DigitalSolution> workforceManagement = new ArrayList<DigitalSolution>(5);
+        
+        
+        insertSolutionCategory("Remote Working - Online Collaboration", onlineCollab);
+        insertSolutionCategory("Remote Working - Virtual Meetings", virtualMeetings);
+        insertSolutionCategory("Remote Working - E-Signature", eSign);
+        insertSolutionCategory("Remote Working - others", others);
+        insertSolutionCategory("Workforce Management", workforceManagement);
+        
+        //arrayList for Online Collab - 2 solutions
+        
+        
+        DigitalSolution digitalSolutionOC1 = new DigitalSolution("1",
+        "HP stay home PC/Print package", "Hewlett Packard", "Remote Working - Online Collaboration");
+        insertDigitalSolution(digitalSolutionOC1);
+        
+        DigitalSolution digitalSolutionOC2 = new DigitalSolution("2",
+        "Dropbox Business", "Dropbox", "Remote Working - Online Collaboration");
+        insertDigitalSolution(digitalSolutionOC2);
+        
+        
+        //arrayList for Virtual Meetings - 2 solutions
+        DigitalSolution digitalSolutionVM1 = new DigitalSolution("3", 
+        "MS Teams", "Microsoft", "Remote Working - Virtual Meetings");
+        insertDigitalSolution(digitalSolutionVM1);
+        
+        DigitalSolution digitalSolutionVM2 = new DigitalSolution("4",
+        "Webex - Web and Videoconferencing", "Cisco", "Remote Working - Virtual Meetings");
+        insertDigitalSolution(digitalSolutionVM2);
+        
+        //arrayList for e-sign - 1 solution
+        DigitalSolution digitalSolutionES = new DigitalSolution("5", 
+        "DocuSign eSignature", "DocuSign", "Remote Working - E-Signature");
+        insertDigitalSolution(digitalSolutionES);
+        
+        //arrayList for others - 2 solution
+        DigitalSolution digitalSolutionOthers1 = new DigitalSolution("6",
+        "Virtual Private Network (VPN) Gateway", "Creative eWorld", "Remote Working - others");
+        insertDigitalSolution(digitalSolutionOthers1);
+        
+        DigitalSolution digitalSolutionOthers2 = new DigitalSolution("7",
+        "Managed Firewall Solution", "LGA Telecom Pte Ltd", "Remote Working - others");
+        insertDigitalSolution(digitalSolutionOthers2);
+        
+        //arrayList for WFM - 4 solutions
+        DigitalSolution digitalSolutionWFM1 = new DigitalSolution("8",
+        "ITemp Free Health Tracking Platform", "Certis CISCO Security Pte Ltd", 
+                "Workforce Management");
+        insertDigitalSolution(digitalSolutionWFM1);
+        
+        DigitalSolution digitalSolutionWFM2 = new DigitalSolution("9",
+        "SMEPAYROLL HRMS Version 11", "Advanced & Best Technologies", 
+                "Workforce Management");
+        insertDigitalSolution(digitalSolutionWFM2);
+        
+        DigitalSolution digitalSolutionWFM3 = new DigitalSolution("10",
+        "OpensoftHR", "Opensoft", "Workforce Management");
+        insertDigitalSolution(digitalSolutionWFM3);
+        
+        DigitalSolution digitalSolutionWFM4 = new DigitalSolution("11",
+        "COVID-19 Management Solution", "EnviroSolutions & Consulting Pte Ltd", 
+                "Workforce Management");
+        insertDigitalSolution(digitalSolutionWFM4);
+        
+        
+        Scanner inputNum = new Scanner(System.in);
+        Scanner inputID = new Scanner(System.in);
+        Scanner inputsolName = new Scanner(System.in);
+        Scanner inputvendor = new Scanner(System.in);
+        Scanner inputsolutionCategory = new Scanner(System.in);
+        Scanner inputRetrieve = new Scanner(System.in);
+        Scanner inputRemove = new Scanner(System.in);
+        
+        int serviceNum = 5;
+        
+        while (serviceNum != 4){
+            
+            System.out.printf("%n%n%s%n", "Welcome! What would you like to do?");
+            System.out.printf("%n%s%n%s%n%s%n%s%n%n", "Enter 1 to add", 
+            "Enter 2 to retrieve", "Enter 3 to remove", "Enter 4 to quit");
+            serviceNum = inputNum.nextInt();
+            
+            switch(serviceNum){
+                case 1:
+                    System.out.printf("%n%s%n", "You have chosen to add.");
+                    
+                    //digital solution from user
+                    System.out.printf("%n%s%n%n", "Please enter the solution name: ");
+                    String solName = inputsolName.nextLine();
+                    System.out.printf("%n%s%n%n", "Please enter your ID: ");
+                    String id = inputID.nextLine();
+                    System.out.printf("%n%s%n%n", "Please enter the vendor: ");
+                    String vendor = inputvendor.nextLine();
+                    
+                    System.out.printf("%n%s%n%s%n%s%n%s%n%s%n%s%n", "Available categories: ", 
+                            "Remote Working - Online Collaboration", "Remote Working - Virtual Meetings", 
+                            "Remote Working - E-Signature", "Remote Working - Others", "Workforce Management");
+                    System.out.printf("%n%s%n%n", "Please enter the solution category: ");
+                    String solCat = inputsolutionCategory.nextLine();
+                    
+                    DigitalSolution userSolution = new DigitalSolution(id, solName, vendor, solCat);
+                    insertDigitalSolution(userSolution);
+                    
+                    break;
+                    
+                case 2:
+                    //display all the info on the chosen DS info from the corresponding category
+                    System.out.printf("%n%s%n", "You have chosen to retrieve.");
+                    System.out.println("List of solution names available: ");
+                    for(int i = 0; i < solutionCategorys.size(); i++){
+                        DigitalSolutionsCategory dsc = solutionCategorys.get(i);
+                        for (int j = 0; j < dsc.digitalSolutionStorage.size(); j++){
+                            System.out.printf("%n%s%n", dsc.digitalSolutionStorage.get(j).Name);
+                        }
+                    }
+                    
+                    
+                    //solution from program
+                    //String digitalSolutionName = "MS Teams";
+                    //retrieveDigitalSolution(digitalSolutionName);
+                    
+                    //solution name by user:
+                    System.out.printf("%n%s", "Please enter a solution name: ");
+                    String solutionName = inputRetrieve.nextLine();
+                    retrieveDigitalSolution(solutionName);
+                    System.out.println();
+                    
+                    break;
+                    
+                case 3:
+                    System.out.printf("%n%s%n", "You have chosen to remove.");
+                    
+                    //remove from user input
+                    System.out.println("List of solution names available: ");
+                    for(int i = 0; i < solutionCategorys.size(); i++){
+                        DigitalSolutionsCategory dsc = solutionCategorys.get(i);
+                        for (int j = 0; j < dsc.digitalSolutionStorage.size(); j++){
+                            System.out.printf("%n%s%n", dsc.digitalSolutionStorage.get(j).Name);
+                        }
+                    }
+                    System.out.printf("%n%s", "Please enter the solution name to be removed: ");
+                    String removeSolutionName = inputRemove.nextLine();
+                    removeDigitalSolution(removeSolutionName);
+                    System.out.println();
+                    break;
+                    
+                case 4:
+                    //exits the program
+                    System.out.println("You have chosen to quit. Thank you!");
+                    break;
+                    
+                default:
+                    //detects if false integer has been entered
+                    //update to handle non-integer
+                    System.out.printf("%n%s%n", "Invalid entry number!");
+                    break;
+            }
+        }
+    }
+    
+    
+    
+    public static void insertSolutionCategory(String category, ArrayList<DigitalSolution> digitalSolutions){
+        DigitalSolutionsCategory digitalSolutionsCategory = new DigitalSolutionsCategory(category, digitalSolutions);
+        solutionCategorys.add(digitalSolutionsCategory);
+    }
+    
+    public static void insertDigitalSolution(DigitalSolution digitalSolution) {
+
+        for (int i = 0; i < solutionCategorys.size(); i++  ) {
+            DigitalSolutionsCategory dsc = solutionCategorys.get(i);
+            if (dsc.solutionCategory.equals(digitalSolution.solutionCategory)) {
+                for (int j = 0; j < dsc.digitalSolutionStorage.size(); j++  ) {
+                    if (dsc.digitalSolutionStorage.get(j).ID.equals(digitalSolution.ID)) {
+                        return;
+                    }
+                }
+                dsc.addDigitalSolution(digitalSolution);
+            }
+        }
+    }
+    
+    
+    public static void retrieveDigitalSolution(String digitalSolutionName) {
+
+        for (int i = 0; i < solutionCategorys.size(); i++  ) {
+            DigitalSolutionsCategory dsc = solutionCategorys.get(i);
+            //for (int j = 0; j < dsc.digitalSolutionStorage.size(); j++  ) {
+
+                DigitalSolution digitalSolution = dsc.getDigitalSolution(digitalSolutionName);
+                if (digitalSolution != null) {
+                    System.out.println("\nID: "  + digitalSolution.ID);
+                    System.out.println("Name: "  + digitalSolution.Name);
+                    System.out.println("Vendor: " +  digitalSolution.vendor);
+                    System.out.println("Solution: " +  digitalSolution.solutionCategory + "\n");
+                } else{
+                    System.out.println("Does not exist in " + dsc.solutionCategory);
+                }
+                
+
+            //}
+        }
+        System.out.println("\nSmallest category: " +  smallestCategory().solutionCategory);
+        System.out.println("Largest category: "  + largestCategory().solutionCategory);
+
+    }
+    
+    public static void removeDigitalSolution(String digitalSolutionRemove) {
+
+        for (int i = 0; i < solutionCategorys.size(); i++  ) {
+            DigitalSolutionsCategory dsc = solutionCategorys.get(i);
+            for (int j = 0; j < dsc.digitalSolutionStorage.size(); j++  ) {
+                if (dsc.digitalSolutionStorage.get(j).Name.equals(digitalSolutionRemove)) {
+                    dsc.removeDigitalObject(digitalSolutionRemove);
+
+                } 
+            }
+        }
+    }
+    
+    public static DigitalSolutionsCategory smallestCategory(){
+        DigitalSolutionsCategory smallCategory = solutionCategorys.get(0);
+        for(int i = 1; i < solutionCategorys.size(); i++){
+            if(solutionCategorys.get(i).digitalSolutionStorage.size() < smallCategory.digitalSolutionStorage.size()){
+                smallCategory = solutionCategorys.get(i);
+            }
+        }
+        return smallCategory;
+    }
+    
+    public static DigitalSolutionsCategory largestCategory(){
+        DigitalSolutionsCategory largeCategory = solutionCategorys.get(0);
+        for(int i = 1; i < solutionCategorys.size(); i++){
+            if(solutionCategorys.get(i).digitalSolutionStorage.size() > largeCategory.digitalSolutionStorage.size()){
+                largeCategory = solutionCategorys.get(i);
+            }
+        }
+        return largeCategory;
+    }
+ 
+}

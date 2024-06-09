@@ -1,0 +1,17 @@
+package DigitalSolutionsManagement;
+
+
+public class DigitalSolution {
+    public String ID;
+    public String Name;
+    public String vendor;
+    public String solutionCategory;
+    public String description;
+    
+    public DigitalSolution (String ID, String Name, String vendor, String solutionCategory){
+        this.ID = ID;
+        this.Name = Name;
+        this.vendor = vendor;
+        this.solutionCategory = solutionCategory;
+    }
+}

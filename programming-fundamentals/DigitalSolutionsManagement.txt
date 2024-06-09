@@ -1,0 +1,188 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class DigitalSolutionsCategory {
+
+    String solutionCategory;
+    ArrayList<DigitalSolution> digitalSolutionStorage;
+
+    public DigitalSolutionsCategory(String solutionCategory, ArrayList<DigitalSolution> digitalSolutionStorage) {
+        this.solutionCategory = solutionCategory;
+        this.digitalSolutionStorage = digitalSolutionStorage;
+    }
+
+    public boolean addDigitalSolution(DigitalSolution digitalSolution) {
+        try {
+            digitalSolutionStorage.add(digitalSolution);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+
+    }
+
+    public void removeDigitalObject(String digitalSolutionRemove) {
+        try {
+            DigitalSolution digitalSolution = getDigitalSolution(digitalSolutionRemove);
+            digitalSolutionStorage.remove(digitalSolution);
+            System.out.println("Removed: " +  digitalSolutionRemove);
+        } catch (Exception e) {
+            System.out.println("Could not remove: " +  digitalSolutionRemove);
+        }
+    }
+
+    public DigitalSolution getDigitalSolution(String digitalSolutionName) {
+        for (int i = 0; i < digitalSolutionStorage.size(); i++  ) {
+            if (digitalSolutionStorage.get(i).Name.equals(digitalSolutionName)) {
+                return digitalSolutionStorage.get(i);
+            }
+        }
+        System.out.println("Digital Solution " +  digitalSolutionName +  " does not exist");
+        return null;
+    }
+
+}
+
+class DigitalSolution {
+
+    public String ID;
+    public String Name;
+    public String Vendor;
+    public String Category;
+
+    public DigitalSolution(String ID, String Name, String Vendor, String Category) {
+        this.ID = ID;
+        this.Name = Name;
+        this.Vendor = Vendor;
+        this.Category = Category;
+    }
+}
+
+public class DigitalSolutionsManagement {
+
+    static ArrayList<DigitalSolutionsCategory> solutionCategorys = new ArrayList<DigitalSolutionsCategory>();
+
+    public static void main(String[] args) {
+        ArrayList<DigitalSolution> rmOnlineCollab = new ArrayList<DigitalSolution>();
+        ArrayList<DigitalSolution> rmVirtualMeetings = new ArrayList<DigitalSolution>();
+        ArrayList<DigitalSolution> rmESignitures = new ArrayList<DigitalSolution>();
+        ArrayList<DigitalSolution> rmOthers = new ArrayList<DigitalSolution>();
+
+        insertSolutionCategory("Remote Working - Online Collaboration", rmOnlineCollab);
+        insertSolutionCategory("Remote Working - Virtual Meetings", rmVirtualMeetings);
+        insertSolutionCategory("Remote Working - e-Signatures", rmESignitures);
+        insertSolutionCategory("Remote Working - Others", rmOthers);
+
+        Scanner sc = new Scanner(System.in);
+
+        int serviceNum = 5;
+
+        while (serviceNum != 4) {
+            System.out.println("Welcome, what would you like to do?");
+            System.out.println("1 - Add \n2 - Retrieve \n3 - Remove \n4 - Quit");
+
+            serviceNum = sc.nextInt();
+
+            switch (serviceNum) {
+                case 1:
+                    System.out.println("You have chosen to add");
+                    DigitalSolution digitalSolution = new DigitalSolution("1", "MS Teams", "MS",
+                            "Remote Working - Virtual Meetings");
+                    insertDigitalSolution(digitalSolution);
+                    break;
+                case 2:
+                    System.out.println("You have chosen to retrieve");
+                    String digitalSolutionName = "MS Teams";
+                    retrieveDigitalSolution(digitalSolutionName);
+                    break;
+                case 3:
+                    System.out.println("You have chosen to remove");
+                    String digitalSolutionRemove = "MS Teams";
+                    removeDigitalSolution(digitalSolutionRemove);
+                    break;
+                case 4:
+                    System.out.println("You have chosen to quit, goodbye");
+                    break;
+                default:
+                    System.out.println("Please enter a valid number");
+                    break;
+            }
+
+        }
+    }
+
+    public static void insertSolutionCategory(String category, ArrayList<DigitalSolution> digitalSolutions) {
+        DigitalSolutionsCategory digitalSolutionsCategory = new DigitalSolutionsCategory(category, digitalSolutions);
+        solutionCategorys.add(digitalSolutionsCategory);
+    }
+
+    public static void insertDigitalSolution(DigitalSolution digitalSolution) {
+
+        for (int i = 0; i < solutionCategorys.size(); i++  ) {
+            DigitalSolutionsCategory dsc = solutionCategorys.get(i);
+            if (dsc.solutionCategory.equals(digitalSolution.Category)) {
+                for (int j = 0; j < dsc.digitalSolutionStorage.size(); j++  ) {
+                    if (dsc.digitalSolutionStorage.get(j).ID.equals(digitalSolution.ID)) {
+                        return;
+                    }
+                }
+                dsc.addDigitalSolution(digitalSolution);
+            }
+
+        }
+    }
+
+    public static void retrieveDigitalSolution(String digitalSolutionName) {
+
+        for (int i = 0; i < solutionCategorys.size(); i++  ) {
+            DigitalSolutionsCategory dsc = solutionCategorys.get(i);
+            for (int j = 0; j < dsc.digitalSolutionStorage.size(); j++  ) {
+
+                DigitalSolution digitalSolution = dsc.getDigitalSolution(digitalSolutionName);
+                if (digitalSolution != null) {
+                    System.out.println("ID: "  + digitalSolution.ID);
+                    System.out.println("Name: "  + digitalSolution.Name);
+                    System.out.println("Vendor: " +  digitalSolution.Vendor);
+                    System.out.println("Solution: " +  digitalSolution.Category);
+                }
+            }
+        }
+        System.out.println("Smallest category: " +  smallestCategory().solutionCategory);
+        System.out.println("Largest category: "  + largestCategory().solutionCategory);
+
+    }
+
+    public static void removeDigitalSolution(String digitalSolutionRemove) {
+
+        for (int i = 0; i < solutionCategorys.size(); i++  ) {
+            DigitalSolutionsCategory dsc = solutionCategorys.get(i);
+            for (int j = 0; j < dsc.digitalSolutionStorage.size(); j++  ) {
+                if (dsc.digitalSolutionStorage.get(j).Name.equals(digitalSolutionRemove)) {
+                    dsc.removeDigitalObject(digitalSolutionRemove);
+
+                }
+            }
+        }
+    }
+
+    public static DigitalSolutionsCategory smallestCategory() {
+        DigitalSolutionsCategory smallCategory = solutionCategorys.get(0);
+        for (int i = 1; i < solutionCategorys.size(); i++  ) {
+            if (solutionCategorys.get(i).digitalSolutionStorage.size() < smallCategory.digitalSolutionStorage.size()) {
+                smallCategory = solutionCategorys.get(i);
+            }
+        }
+        return smallCategory;
+    }
+
+    public static DigitalSolutionsCategory largestCategory() {
+        DigitalSolutionsCategory largeCategory = solutionCategorys.get(0);
+        for (int i = 1; i < solutionCategorys.size(); i++  ) {
+            if (solutionCategorys.get(i).digitalSolutionStorage.size() > largeCategory.digitalSolutionStorage.size()) {
+                largeCategory = solutionCategorys.get(i);
+            }
+        }
+        return largeCategory;
+    }
+
+}
